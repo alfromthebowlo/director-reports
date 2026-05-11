@@ -484,7 +484,7 @@ async function apiPatch(url, body) {
 // ═══════════════ SHAREPOINT ═══════════════
 async function getSiteAndListIds() {
   const hostname = 'leichhardtbowlingclub.sharepoint.com';
-  const sitePath = '/sites/TS';
+  const sitePath = '/';
   const siteRes = await apiGet(`https://graph.microsoft.com/v1.0/sites/${hostname}:${sitePath}`);
   siteId = siteRes.id;
   const listsRes = await apiGet(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists?$filter=displayName eq 'Director Reports'`);
@@ -618,7 +618,7 @@ function renderDetail() {
       <div style="background:#f5f5f5;border-radius:var(--radius);padding:20px;border:1px solid #e0e0e0;">
         <div style="display:flex;gap:12px;align-items:flex-start;">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9e9e9e" stroke-width="2" style="flex-shrink:0;margin-top:1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <p style="font-size:13px;color:#666;line-height:1.7;">The full details of this report are restricted to the <strong style="color:#444">GM, Club Secretary, and Board Chair</strong>, as they may contain private or personal information about one or more people.<br><br>If you require access for a proper governance purpose, contact the Chair or Club Secretary.</p>
+          <p style="font-size:13px;color:#666;line-height:1.7;">The full details of this report are restricted to the <strong style="color:#444">GM, Club Secretary, and Board Chair</strong>, as they may contain private or personal information about one or more people.<br><br>If you require access for a relevant governance purpose, contact the Chair or Club Secretary.</p>
         </div>
       </div>`;
     return;
