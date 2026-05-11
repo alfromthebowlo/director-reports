@@ -394,7 +394,7 @@ const REDIRECT_URI = 'https://alfromthebowlo.github.io/director-reports/Director
 const msalConfig = {
   auth: {
     clientId: CLIENT_ID,
-    authority: `https://login.microsoftonline.com/$3e8f57de-d795-48c9-8537-0b1caae52c09`,
+    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
     redirectUri: REDIRECT_URI
   },
   cache: { cacheLocation: 'sessionStorage', storeAuthStateInCookie: false }
