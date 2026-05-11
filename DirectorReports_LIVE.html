@@ -484,7 +484,7 @@ async function apiPatch(url, body) {
 // ═══════════════ SHAREPOINT ═══════════════
 async function getSiteAndListIds() {
   const hostname = 'leichhardtbowlingclub.sharepoint.com';
-  const sitePath = '/';
+  const sitePath = '/sites/TS';
   const siteRes = await apiGet(`https://graph.microsoft.com/v1.0/sites/${hostname}:${sitePath}`);
   siteId = siteRes.id;
   const listsRes = await apiGet(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists?$filter=displayName eq 'Director Reports'`);
