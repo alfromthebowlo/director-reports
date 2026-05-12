@@ -807,27 +807,23 @@ function resetForm() {
   selectedFiles = [];
   document.getElementById('fileList').innerHTML = '';
 }
-
 function selectType(btn, type) {
   selectedType = type;
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   checkSubmit();
 }
-
 function selectUrgency(btn, urgency) {
   selectedUrgency = urgency;
   document.querySelectorAll('.urgency-btn').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   checkSubmit();
 }
-
 function checkSubmit() {
   const summary = document.getElementById('fSummary')?.value?.trim();
   const details = document.getElementById('fDetails')?.value?.trim();
   document.getElementById('submitBtn').disabled = !(summary && details && selectedType && selectedUrgency);
 }
-
 async function submitReport() {
   const summary = document.getElementById('fSummary').value.trim();
   const details = document.getElementById('fDetails').value.trim();
@@ -835,6 +831,7 @@ async function submitReport() {
   const confidential = document.getElementById('fConfidential').checked;
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = 'Submitting...';
+  
   try {
     const newItem = await apiPost(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items`, {
       fields: {
@@ -850,14 +847,12 @@ async function submitReport() {
     
     // Upload files if any
     if (selectedFiles.length > 0) {
-  const uploadedFiles = await uploadFiles(newItem.id);
-  if (uploadedFiles.length > 0) {
-    const attachmentLinks = uploadedFiles.map(f => `<a href="${f.url}" target="_blank">${f.name}</a>`).join('<br>');
-    await apiPatch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${newItem.id}/fields`, {
-      Attachments2: attachmentLinks
-    });
-  }
-}
+      const uploadedFiles = await uploadFiles(newItem.id);
+      if (uploadedFiles.length > 0) {
+        const attachmentLinks = uploadedFiles.map(f => `<a href="${f.url}" target="_blank">${f.name}</a>`).join('<br>');
+        await apiPatch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${newItem.id}/fields`, {
+          Attachments2: attachmentLinks
+        });
       }
     }
     
