@@ -751,12 +751,25 @@ async function uploadFiles(reportId) {
   for (const file of selectedFiles) {
     try {
       const fileName = `Report_${reportId}_${file.name}`;
-      const folderPath = `/sites/${siteId}/drive/root:/${LIBRARY_NAME}`;
+      
+      // Get the drive ID for the library
+      const drivesRes = await apiGet(`https://graph.microsoft.com/v1.0/sites/${siteId}/drives`);
+      console.log('Available drives:', drivesRes);
+      
+      const library = drivesRes.value.find(d => d.name === LIBRARY_NAME);
+      if (!library) {
+        console.error('Library not found. Available:', drivesRes.value.map(d => d.name));
+        showToast('Upload failed: Library not found', false);
+        continue;
+      }
       
       const arrayBuffer = await file.arrayBuffer();
       const token = await getToken();
       
-      const uploadRes = await fetch(`https://graph.microsoft.com/v1.0${folderPath}/${fileName}:/content`, {
+      const uploadUrl = `https://graph.microsoft.com/v1.0/drives/${library.id}/root:/${fileName}:/content`;
+      console.log('Upload URL:', uploadUrl);
+      
+      const uploadRes = await fetch(uploadUrl, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -765,12 +778,19 @@ async function uploadFiles(reportId) {
         body: arrayBuffer
       });
       
+      console.log('Upload response status:', uploadRes.status);
+      const uploadData = await uploadRes.json();
+      console.log('Upload response:', uploadData);
+      
       if (uploadRes.ok) {
-        const uploadData = await uploadRes.json();
         uploadedUrls.push({ name: file.name, url: uploadData.webUrl });
+      } else {
+        console.error('Upload failed:', uploadData);
+        showToast(`Upload failed: ${uploadData.error?.message || 'Unknown error'}`, false);
       }
     } catch(e) {
       console.error('File upload error:', e);
+      showToast('File upload error - check console', false);
     }
   }
   return uploadedUrls;
