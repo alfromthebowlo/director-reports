@@ -850,12 +850,14 @@ async function submitReport() {
     
     // Upload files if any
     if (selectedFiles.length > 0) {
-      const uploadedFiles = await uploadFiles(newItem.id);
-      if (uploadedFiles.length > 0) {
-        const attachmentLinks = uploadedFiles.map(f => `${f.name}: ${f.url}`).join('\n');
-        await apiPatch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${newItem.id}/fields`, {
-  Attachments2: attachmentLinks
-});
+  const uploadedFiles = await uploadFiles(newItem.id);
+  if (uploadedFiles.length > 0) {
+    const attachmentLinks = uploadedFiles.map(f => `<a href="${f.url}" target="_blank">${f.name}</a>`).join('<br>');
+    await apiPatch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${newItem.id}/fields`, {
+      Attachments2: attachmentLinks
+    });
+  }
+}
       }
     }
     
