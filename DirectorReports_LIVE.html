@@ -515,7 +515,7 @@ function spToReport(item) {
     actionDaysLeft: daysLeft,
     actionNotes: f.ActionNotes || '',
     resolvedNotes: f.ResolutionNotes || '',
-    attachments: f.Image_x002f_Files || ''
+    attachments: f.Attachments2 || ''
   };
 }
 
@@ -854,7 +854,7 @@ async function submitReport() {
       if (uploadedFiles.length > 0) {
         const attachmentLinks = uploadedFiles.map(f => `${f.name}: ${f.url}`).join('\n');
         await apiPatch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${newItem.id}/fields`, {
-  Image_x002f_Files: attachmentLinks
+  Attachments2: attachmentLinks
 });
       }
     }
