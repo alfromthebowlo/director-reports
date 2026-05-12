@@ -90,7 +90,7 @@
   .report-card.urgency-low { border-left-color: var(--green); background: var(--low-bg); }
   .report-card.urgency-confidential { border-left-color: #9e9e9e; background: #f5f5f5; }
   .report-card.resolved-card { opacity: 0.6; border-left-color: var(--green) !important; background: #f0f7f3 !important; }
-.report-card.resolved-card .report-card-title::after { content: ' ✓'; color: var(--green); font-weight: 700; }
+  .report-card.resolved-card .report-card-title::after { content: ' ✓'; color: var(--green); font-weight: 700; }
   .report-card-content { flex: 1; min-width: 0; }
   .report-card-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .report-card-sub { font-size: 12px; color: var(--text-soft); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -100,9 +100,9 @@
   .pill-medium { background: var(--amber); color: #333; }
   .pill-low { background: var(--green); color: white; }
   .status-badge { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.3px; }
-.status-open { background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9; }
-.status-in-review { background: #fff3e0; color: #f57c00; border: 1px solid #ffb74d; }
-.status-resolved { background: #e8f5e9; color: #388e3c; border: 1px solid #81c784; }
+  .status-open { background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9; }
+  .status-in-review { background: #fff3e0; color: #f57c00; border: 1px solid #ffb74d; }
+  .status-resolved { background: #e8f5e9; color: #388e3c; border: 1px solid #81c784; }
   .fab { position: fixed; bottom: 24px; right: calc(50% - 195px + 16px); background: var(--teal); color: white; border: none; border-radius: 30px; padding: 14px 24px; font-family: var(--font); font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 20px rgba(13,58,61,0.4); display: flex; align-items: center; gap: 8px; z-index: 10; }
   .detail-body { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 32px; }
   .detail-heading { background: var(--navy); border-radius: var(--radius); padding: 16px; color: white; }
@@ -333,6 +333,16 @@
         <textarea class="form-textarea" id="fDetails" placeholder="Provide details of the issue, including context, location, dates, and any relevant actions taken." oninput="checkSubmit()"></textarea>
       </div>
       <div class="form-card">
+        <div class="form-label">Attach Files <span style="color:var(--text-soft);font-weight:400">(optional)</span></div>
+        <p style="font-size:12px;color:var(--text-soft);margin-bottom:10px;line-height:1.5;">Upload images or documents (PDF, JPG, PNG, DOCX). Max 10MB per file.</p>
+        <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx" multiple style="display:none" onchange="handleFiles(this.files)">
+        <button type="button" class="type-btn" onclick="document.getElementById('fileInput').click()" style="width:100%;padding:12px;justify-content:center;display:flex;align-items:center;gap:8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+          Choose Files
+        </button>
+        <div id="fileList" style="margin-top:10px;font-size:12px;color:var(--text-soft);"></div>
+      </div>
+      <div class="form-card">
         <p style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">Contains private or sensitive details? Mark this report as confidential.</p>
         <div class="confidential-row">
           <div class="conf-title" style="font-size:15px;">Mark as Confidential</div>
@@ -380,6 +390,7 @@ const CLIENT_ID = '2b821ff7-6728-4c52-a7a7-043d37f78447';
 const TENANT_ID = '3e8f57de-d795-48c9-8537-0b1caae52c09';
 const SITE_URL = 'https://leichhardtbowlingclub.sharepoint.com';
 const LIST_NAME = 'Director Reports';
+const LIBRARY_NAME = 'Director Reports Attachments';
 const REDIRECT_URI = 'https://leichhardtbowlo.github.io/director-reports/DirectorReports_LIVE.html';
 
 const msalConfig = {
@@ -405,6 +416,7 @@ let urgencyFilterIdx = 0;
 let showLog = false;
 let siteId = null;
 let listId = null;
+let selectedFiles = [];
 
 // ═══════════════ AUTH ═══════════════
 async function init() {
@@ -495,14 +507,15 @@ function spToReport(item) {
     urgency: f.Urgency || 'Low',
     status: f.Status || 'Open',
     confidential: f.Confidential || false,
-    submittedBy: f.Author?.LookupValue || item.createdBy?.user?.displayName || '',
+    submittedBy: f.Author?.LookupValue || item.createdBy?.user?.displayName || 'Unknown',
     date: created.toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}),
     details: f.Details || '',
     alsoBy: f.AlsoRaisedBy || '',
     actionByDate: actionDate ? actionDate.toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : null,
     actionDaysLeft: daysLeft,
     actionNotes: f.ActionNotes || '',
-    resolvedNotes: f.ResolutionNotes || ''
+    resolvedNotes: f.ResolutionNotes || '',
+    attachments: f.Attachments || ''
   };
 }
 
@@ -555,8 +568,8 @@ function renderList(search='') {
         </div>
         <div class="report-card-sub">
           <span class="urgency-pill pill-${r.urgency.toLowerCase()}">${r.urgency}</span>
-<span class="status-badge status-${r.status.toLowerCase().replace(' ', '-')}">${r.status}</span>
-<span>${r.type}</span>
+          <span class="status-badge status-${r.status.toLowerCase().replace(' ', '-')}">${r.status}</span>
+          <span>${r.type}</span>
           <span>·</span>
           <span>${r.date}</span>
         </div>
@@ -595,16 +608,16 @@ function renderDetail() {
     else { bannerClass = 'banner-green'; bannerText = `📅  Action By: ${r.actionByDate}`; }
   }
 
-if (r.confidential) {
+  if (r.confidential) {
     document.getElementById('detailBody').innerHTML = `
       <div class="detail-heading">
         <h2 style="font-style:italic;opacity:0.8;">🔒 Confidential Report</h2>
         <div class="meta-grid">
           <div class="meta-item"><div class="meta-label">Issue Type</div><div class="meta-value">${r.type}</div></div>
           <div class="meta-item"><div class="meta-label">Urgency</div><div class="meta-value">${r.urgency}</div></div>
-         <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value">${r.status}</div></div>
-<div class="meta-item"><div class="meta-label">Date Lodged</div><div class="meta-value">${r.date}</div></div>
-<div class="meta-item"><div class="meta-label">Submitted By</div><div class="meta-value">${r.submittedBy || 'Unknown'}</div></div>
+          <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value">${r.status}</div></div>
+          <div class="meta-item"><div class="meta-label">Date Lodged</div><div class="meta-value">${r.date}</div></div>
+          <div class="meta-item"><div class="meta-label">Submitted By</div><div class="meta-value">${r.submittedBy}</div></div>
         </div>
       </div>
       <div class="action-banner ${bannerClass}">${bannerText}</div>
@@ -624,9 +637,9 @@ if (r.confidential) {
       <div class="meta-grid">
         <div class="meta-item"><div class="meta-label">Issue Type</div><div class="meta-value">${r.type}</div></div>
         <div class="meta-item"><div class="meta-label">Urgency</div><div class="meta-value">${r.urgency}</div></div>
-       <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value">${r.status}</div></div>
-<div class="meta-item"><div class="meta-label">Submitted</div><div class="meta-value">${r.date}</div></div>
-<div class="meta-item"><div class="meta-label">Submitted By</div><div class="meta-value">${r.submittedBy || 'Unknown'}</div></div>
+        <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value">${r.status}</div></div>
+        <div class="meta-item"><div class="meta-label">Submitted</div><div class="meta-value">${r.date}</div></div>
+        <div class="meta-item"><div class="meta-label">Submitted By</div><div class="meta-value">${r.submittedBy}</div></div>
       </div>
     </div>
     <div class="action-banner ${bannerClass}">${bannerText}</div>
@@ -651,7 +664,19 @@ if (r.confidential) {
     <div class="card">
       <div class="card-header">Original Report Details</div>
       <div class="card-body"><p>${r.details}</p></div>
-    </div>`;
+    </div>
+    ${r.attachments ? `<div class="card">
+      <div class="card-header">Attachments</div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+        ${r.attachments.split('\n').map(att => {
+          const parts = att.split(': ');
+          return `<a href="${parts[1]}" target="_blank" style="color:var(--teal);text-decoration:none;display:flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+            ${parts[0]}
+          </a>`;
+        }).join('')}
+      </div>
+    </div>` : ''}`;
 }
 
 function toggleLog() { showLog = !showLog; renderDetail(); }
@@ -697,6 +722,60 @@ async function confirmResolve() {
   } catch(e) { showToast('Error resolving report', false); console.error(e); }
 }
 
+// ═══════════════ FILE HANDLING ═══════════════
+function handleFiles(files) {
+  selectedFiles = Array.from(files);
+  const fileList = document.getElementById('fileList');
+  if (selectedFiles.length === 0) {
+    fileList.innerHTML = '';
+    return;
+  }
+  fileList.innerHTML = selectedFiles.map((f, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px;background:#f5f5f5;border-radius:6px;margin-bottom:4px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
+      <button onclick="removeFile(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;padding:2px;">✕</button>
+    </div>
+  `).join('');
+}
+
+function removeFile(index) {
+  selectedFiles.splice(index, 1);
+  handleFiles(selectedFiles);
+}
+
+async function uploadFiles(reportId) {
+  if (selectedFiles.length === 0) return [];
+  
+  const uploadedUrls = [];
+  for (const file of selectedFiles) {
+    try {
+      const fileName = `Report_${reportId}_${file.name}`;
+      const folderPath = `/sites/${siteId}/drive/root:/${LIBRARY_NAME}`;
+      
+      const arrayBuffer = await file.arrayBuffer();
+      const token = await getToken();
+      
+      const uploadRes = await fetch(`https://graph.microsoft.com/v1.0${folderPath}/${fileName}:/content`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': file.type
+        },
+        body: arrayBuffer
+      });
+      
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        uploadedUrls.push({ name: file.name, url: uploadData.webUrl });
+      }
+    } catch(e) {
+      console.error('File upload error:', e);
+    }
+  }
+  return uploadedUrls;
+}
+
 // ═══════════════ SUBMIT ═══════════════
 function resetForm() {
   selectedType = ''; selectedUrgency = '';
@@ -705,6 +784,8 @@ function resetForm() {
   document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
   document.querySelectorAll('.urgency-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('submitBtn').disabled = true;
+  selectedFiles = [];
+  document.getElementById('fileList').innerHTML = '';
 }
 
 function selectType(btn, type) {
@@ -735,7 +816,7 @@ async function submitReport() {
   document.getElementById('submitBtn').disabled = true;
   document.getElementById('submitBtn').textContent = 'Submitting...';
   try {
-    await apiPost(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items`, {
+    const newItem = await apiPost(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items`, {
       fields: {
         Title: summary,
         IssueType: selectedType,
@@ -746,6 +827,19 @@ async function submitReport() {
         Status: 'Open'
       }
     });
+    
+    // Upload files if any
+    if (selectedFiles.length > 0) {
+      const uploadedFiles = await uploadFiles(newItem.id);
+      if (uploadedFiles.length > 0) {
+        const attachmentLinks = uploadedFiles.map(f => `${f.name}: ${f.url}`).join('\n');
+        await apiPatch(`https://graph.microsoft.com/v1.0/sites/${siteId}/lists/${listId}/items/${newItem.id}/fields`, {
+          Attachments: attachmentLinks
+        });
+      }
+    }
+    
+    selectedFiles = [];
     showToast('Report submitted successfully!', true);
     await loadStats();
     await loadReports();
