@@ -495,7 +495,7 @@ function spToReport(item) {
     urgency: f.Urgency || 'Low',
     status: f.Status || 'Open',
     confidential: f.Confidential || false,
-    submittedBy: f.Author0LookupValue || '',
+    submittedBy: f.Author?.LookupValue || item.createdBy?.user?.displayName || '',
     date: created.toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}),
     details: f.Details || '',
     alsoBy: f.AlsoRaisedBy || '',
@@ -602,7 +602,7 @@ if (r.confidential) {
         <div class="meta-grid">
           <div class="meta-item"><div class="meta-label">Issue Type</div><div class="meta-value">${r.type}</div></div>
           <div class="meta-item"><div class="meta-label">Urgency</div><div class="meta-value">${r.urgency}</div></div>
-         <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value"><span class="status-badge status-${r.status.toLowerCase().replace(' ', '-')}" style="font-size:11px;padding:4px 12px;">${r.status}</span></div></div>
+         <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value">${r.status}</div></div>
 <div class="meta-item"><div class="meta-label">Date Lodged</div><div class="meta-value">${r.date}</div></div>
 <div class="meta-item"><div class="meta-label">Submitted By</div><div class="meta-value">${r.submittedBy || 'Unknown'}</div></div>
         </div>
@@ -624,7 +624,7 @@ if (r.confidential) {
       <div class="meta-grid">
         <div class="meta-item"><div class="meta-label">Issue Type</div><div class="meta-value">${r.type}</div></div>
         <div class="meta-item"><div class="meta-label">Urgency</div><div class="meta-value">${r.urgency}</div></div>
-       <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value"><span class="status-badge status-${r.status.toLowerCase().replace(' ', '-')}" style="font-size:11px;padding:4px 12px;">${r.status}</span></div></div>
+       <div class="meta-item"><div class="meta-label">Status</div><div class="meta-value">${r.status}</div></div>
 <div class="meta-item"><div class="meta-label">Submitted</div><div class="meta-value">${r.date}</div></div>
 <div class="meta-item"><div class="meta-label">Submitted By</div><div class="meta-value">${r.submittedBy || 'Unknown'}</div></div>
       </div>
